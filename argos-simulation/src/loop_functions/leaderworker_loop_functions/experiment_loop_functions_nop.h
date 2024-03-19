@@ -57,7 +57,6 @@ private:
    UInt32 m_unTotalTasks;
    UInt32 m_unTaskDemand;
    UInt32 m_unPointsObtained;
-   bool m_bNoDemandTasks;
 
    std::string m_strWorkerType;
 

@@ -39,14 +39,14 @@ from scipy.spatial.distance import cdist, euclidean
 from colorama import Fore, Back, Style
 
 # Path to simulation logs
-# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/nop_ex1/')
-# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/nop_ex0/')
-# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/nop_ex2/')
-# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/real_robots')
-RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/network_maintenance/')
-# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_iros/')
-# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_comm/')
-# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_real_robots/')
+# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/nop_ex1/')
+# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/nop_ex0/')
+# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/nop_ex2/')
+# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/real_robots')
+RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance/')
+# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_iros/')
+# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_comm/')
+# RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_real_robots/')
 
 BINARY_FILENAME = 'log_data.pb'
 SUMMARY_FILENAME = 'summary.csv'
@@ -4176,8 +4176,8 @@ def main():
     ### final timestep
     # scenario = 'network_maintenance_3T_6R_019'
     scenario = 'network_maintenance_5T_6R_018' ## in paper
-    path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/results/network_maintenance', scenario)
-    # path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_iros/{scenario[20:22]}', scenario)
+    path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance', scenario)
+    # path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_iros/{scenario[20:22]}', scenario)
     real_robot = False
 
     ### comm_range
@@ -4185,20 +4185,20 @@ def main():
     # if comm_range[-1] == '0':
     #     comm_range_name = comm_range[:-1]
     # scenario = f'network_maintenance_6T_12R_{comm_range_name}RAB_092'
-    # path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_comm/{comm_range}RAB/{scenario[20:22]}', scenario)
+    # path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_comm/{comm_range}RAB/{scenario[20:22]}', scenario)
     # real_robot = False
     # global RESULTS_DIR
-    # RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_comm/')
+    # RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_comm/')
 
     # load_log_with_checks(path, print_result=True)
 
     ### real robot
     # scenario = 'results_008'
     # solution = 'star'
-    # path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_real_robots/', solution, scenario)
+    # path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_real_robots/', solution, scenario)
     # real_robot = True
     # SUMMARY_FILENAME = ''
-    # RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_real_robots/')
+    # RESULTS_DIR = join(environ['HOME'], '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_real_robots/')
 
     ### plot position at final timestep
     plot_single_trial_at_time(path, plot=True, final_timestep=True, real_robot=real_robot)

@@ -82,7 +82,6 @@ void CExperimentLoopFunctionsNop::Init(TConfigurationNode& t_node) {
         GetNodeAttributeOrDefault(tEpuck, "rab_range", EP_RAB_RANGE, 0.8);
 
         /* ############################# */
-        m_bNoDemandTasks = false;
         /* Network maintenance */
         InitRobots();
         InitTasksCircular();
@@ -94,7 +93,6 @@ void CExperimentLoopFunctionsNop::Init(TConfigurationNode& t_node) {
         /* ############################# */
 
         // InitRobots();
-        // m_bNoDemandTasks = false;
         // InitTasks();
 
         if(m_bLogging) {
@@ -160,29 +158,18 @@ void CExperimentLoopFunctionsNop::Destroy() {
 CColor CExperimentLoopFunctionsNop::GetFloorColor(const CVector2& c_position_on_plane) {
 
     CSpace::TMapPerType* cCTasks;
-    if(m_bNoDemandTasks) {
-        cCTasks = &GetSpace().GetEntitiesByType("circle_task_no_demand");
-    } else {
-        cCTasks = &GetSpace().GetEntitiesByType("circle_task");
-    }
+    cCTasks = &GetSpace().GetEntitiesByType("circle_task");
 
     for(CSpace::TMapPerType::iterator it = cCTasks->begin();
        it != cCTasks->end();
        ++it) {
 
-        if(m_bNoDemandTasks) {
-            CCircleTaskNoDemandEntity& cCTask = *any_cast<CCircleTaskNoDemandEntity*>(it->second);
-            if(cCTask.InArea(c_position_on_plane) and Distance(c_position_on_plane, cCTask.GetPosition()) > cCTask.GetRadius()*0.9) {
+        CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(it->second);
+        if(cCTask.InArea(c_position_on_plane) and Distance(c_position_on_plane, cCTask.GetPosition()) > cCTask.GetRadius()*0.9) {
+            if(cCTask.GetDemand() > 0) {
                 return CColor(255,191,191);
-            }
-        } else {
-            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(it->second);
-            if(cCTask.InArea(c_position_on_plane) and Distance(c_position_on_plane, cCTask.GetPosition()) > cCTask.GetRadius()*0.9) {
-                if(cCTask.GetDemand() > 0) {
-                    return CColor(255,191,191);
-                } else {
-                    return CColor(255,250,250);
-                }
+            } else {
+                return CColor(255,250,250);
             }
         }
     }
@@ -205,26 +192,15 @@ void CExperimentLoopFunctionsNop::PreStep() {
     CSpace::TMapPerType* cCTasks;
 
     if(m_bTaskExists) {
-        if(m_bNoDemandTasks) {
-            cCTasks = &GetSpace().GetEntitiesByType("circle_task_no_demand");
-        } else {
-            cCTasks = &GetSpace().GetEntitiesByType("circle_task");
-            // cCTasks = &GetSpace().GetEntitiesByType("rectangle_task");
-        }
+        cCTasks = &GetSpace().GetEntitiesByType("circle_task");
 
         for(CSpace::TMapPerType::iterator itTask = cCTasks->begin();
             itTask != cCTasks->end();
             ++itTask) {
             
             /* Initialize each task with zero e-pucks working on it */
-            if(m_bNoDemandTasks) {
-                CCircleTaskNoDemandEntity& cCTask = *any_cast<CCircleTaskNoDemandEntity*>(itTask->second);
-                m_mapRobotPerTask[cCTask.GetId()] = 0;
-            } else {
-                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-                m_mapRobotPerTask[cCTask.GetId()] = 0;
-            }
-
+            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            m_mapRobotPerTask[cCTask.GetId()] = 0;
         }
     }
 
@@ -253,49 +229,21 @@ void CExperimentLoopFunctionsNop::PreStep() {
                 ++itTask) {
 
                 /* Task location */
-                if(m_bNoDemandTasks) {
-                    CCircleTaskNoDemandEntity& cCTask = *any_cast<CCircleTaskNoDemandEntity*>(itTask->second);
+                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                CVector2 cTaskPos = cCTask.GetPosition();
 
-                    CVector2 cTaskPos = cCTask.GetPosition();
-
-                    /* If there is a task with the given task position AND leader is within the task range, return task demand */
-                    if(cCTask.InArea(cPos)) {
-                        cController.SetTaskId(cCTask.GetId());
-                        UInt32 demand = cCTask.GetWorkPerformed();
-                        cController.SetTaskDemand(demand);
-                        cController.SetInitTaskDemand(cCTask.GetInitDemand());
-                        if(demand > 0) 
-                            cController.SetMinimumCount(cCTask.GetMinRobotNum());
-                        else
-                            cController.SetMinimumCount(1); // to prevent leader from moving away from the task
-                        leaderAtTask = true;
-                        break;
-                    }
-                } else {
-                    CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-                    // CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
-
-                    CVector2 cTaskPos = cCTask.GetPosition();
-
-                    // /* If there is a task with the given task position AND leader is within the task range, return task demand */
-                    // if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
-                    //     cController.SetTaskDemand(cCTask.GetDemand());
-                    //     break;
-                    // }
-
-                    /* If there is a task with the given task position AND leader is within the task range, return task demand */
-                    if(cCTask.InArea(cPos)) {
-                        cController.SetTaskId(cCTask.GetId());
-                        UInt32 demand = cCTask.GetDemand();
-                        cController.SetTaskDemand(demand);
-                        cController.SetInitTaskDemand(cCTask.GetInitDemand());
-                        if(demand > 0) 
-                            cController.SetMinimumCount(cCTask.GetMinRobotNum());
-                        else
-                            cController.SetMinimumCount(0);
-                        leaderAtTask = true;
-                        break;
-                    }
+                /* If there is a task with the given task position AND leader is within the task range, return task demand */
+                if(cCTask.InArea(cPos)) {
+                    cController.SetTaskId(cCTask.GetId());
+                    UInt32 demand = cCTask.GetDemand();
+                    cController.SetTaskDemand(demand);
+                    cController.SetInitTaskDemand(cCTask.GetInitDemand());
+                    if(demand > 0) 
+                        cController.SetMinimumCount(cCTask.GetMinRobotNum());
+                    else
+                        cController.SetMinimumCount(0);
+                    leaderAtTask = true;
+                    break;
                 }
             }
         }
@@ -352,41 +300,25 @@ void CExperimentLoopFunctionsNop::PreStep() {
                         ++itTask) {
 
                         /* Task location */
-                        if(m_bNoDemandTasks) {
-                            CCircleTaskNoDemandEntity& cCTask = *any_cast<CCircleTaskNoDemandEntity*>(itTask->second);
+                        CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+                        // CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
 
-                            CVector2 cTaskPos = cCTask.GetPosition();
+                        CVector2 cTaskPos = cCTask.GetPosition();
 
-                            /* Check if robot is working on a task */
-                            if(cController.IsWorking()) {
-                                if(cCTask.InArea(cPos) && cCTask.InArea(cLeaderPos)) {
-                                    
-                                    m_mapRobotPerTask[cCTask.GetId()]++; // Increment robot working on this task
-                                    m_mapRobotTaskStatus[cEPuck.GetId()] = true;
-                                    break;
-                                }
-                            }
-                        } else {
-                            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-                            // CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
-
-                            CVector2 cTaskPos = cCTask.GetPosition();
-
-                            /* Check if robot is working on a task */
-                            if(cController.IsWorking()) {
-                                /* Check e-puck and its leader is within the range of a task */
-                                // if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
-                                // (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
-                                    
-                                //     m_mapRobotPerTask[cCTask.GetId()]++; // Increment robot working on this task
-                                //     break;
-                                // }
-                                if(cCTask.InArea(cPos) && cCTask.InArea(cLeaderPos)) {
-                                    
-                                    m_mapRobotPerTask[cCTask.GetId()]++; // Increment robot working on this task
-                                    m_mapRobotTaskStatus[cEPuck.GetId()] = true;
-                                    break;
-                                }
+                        /* Check if robot is working on a task */
+                        if(cController.IsWorking()) {
+                            /* Check e-puck and its leader is within the range of a task */
+                            // if((cPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2) &&
+                            // (cLeaderPos - cTaskPos).SquareLength() < pow(cCTask.GetRadius(),2)) {
+                                
+                            //     m_mapRobotPerTask[cCTask.GetId()]++; // Increment robot working on this task
+                            //     break;
+                            // }
+                            if(cCTask.InArea(cPos) && cCTask.InArea(cLeaderPos)) {
+                                
+                                m_mapRobotPerTask[cCTask.GetId()]++; // Increment robot working on this task
+                                m_mapRobotTaskStatus[cEPuck.GetId()] = true;
+                                break;
                             }
                         }
                     }
@@ -438,25 +370,14 @@ void CExperimentLoopFunctionsNop::PostStep() {
     CSpace::TMapPerType* cCTasks;
 
     if(m_bTaskExists) {
-        if(m_bNoDemandTasks) {
-            cCTasks = &GetSpace().GetEntitiesByType("circle_task_no_demand");
-        } else {
-            cCTasks = &GetSpace().GetEntitiesByType("circle_task");
-            // cCTasks = &GetSpace().GetEntitiesByType("rectangle_task");
-        }
+        cCTasks = &GetSpace().GetEntitiesByType("circle_task");
 
         for(CSpace::TMapPerType::iterator itTask = cCTasks->begin();
             itTask != cCTasks->end();
             ++itTask) {
             
-            if(m_bNoDemandTasks) {
-                CCircleTaskNoDemandEntity& cCTask = *any_cast<CCircleTaskNoDemandEntity*>(itTask->second);
-                total_demand += (int)cCTask.GetWorkPerformed();
-            } else {
-                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-                // CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
-                total_demand += (int)cCTask.GetDemand();
-            }
+            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            total_demand += (int)cCTask.GetDemand();
         }
     }
 
@@ -467,48 +388,33 @@ void CExperimentLoopFunctionsNop::PostStep() {
             itTask != cCTasks->end();
             ++itTask) {
 
-            if(m_bNoDemandTasks) {
-                CCircleTaskNoDemandEntity& cCTask = *any_cast<CCircleTaskNoDemandEntity*>(itTask->second);
-                UInt32 currentWorkPerformed = cCTask.GetWorkPerformed();
+            CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
+            UInt32 currentDemand = cCTask.GetDemand();
 
-                cCTask.SetCurrentRobotNum(m_mapRobotPerTask[cCTask.GetId()]);
+            cCTask.SetCurrentRobotNum(m_mapRobotPerTask[cCTask.GetId()]);
 
-                /* Check if there is enough robots working on the task */
-                if(m_mapRobotPerTask[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
+            if(currentDemand == 0)
+                continue; // Skip completed tasks
 
-                    /* Update task demand */
-                    cCTask.SetWorkPerformed(currentWorkPerformed + m_mapRobotPerTask[cCTask.GetId()]);
-                    m_unPointsObtained += m_mapRobotPerTask[cCTask.GetId()];
-                }
-            } else {
-                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-                UInt32 currentDemand = cCTask.GetDemand();
+            /* Check if there is enough robots working on the task */
+            if(m_mapRobotPerTask[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
 
-                cCTask.SetCurrentRobotNum(m_mapRobotPerTask[cCTask.GetId()]);
+                // /* Update task demand (max robot number unit per step) */
+                // if(currentDemand <= m_mapRobotPerTask[cCTask.GetId()]) {
+                //     cCTask.SetDemand(0);
+                //     /* The floor texture must be updated */
+                //     m_pcFloor->SetChanged();
+                // } else {
+                //     cCTask.SetDemand(currentDemand - m_mapRobotPerTask[cCTask.GetId()]);
+                // }
 
-                if(currentDemand == 0)
-                    continue; // Skip completed tasks
-
-                /* Check if there is enough robots working on the task */
-                if(m_mapRobotPerTask[cCTask.GetId()] >= cCTask.GetMinRobotNum()) {
-
-                    // /* Update task demand (max robot number unit per step) */
-                    // if(currentDemand <= m_mapRobotPerTask[cCTask.GetId()]) {
-                    //     cCTask.SetDemand(0);
-                    //     /* The floor texture must be updated */
-                    //     m_pcFloor->SetChanged();
-                    // } else {
-                    //     cCTask.SetDemand(currentDemand - m_mapRobotPerTask[cCTask.GetId()]);
-                    // }
-
-                    /* Update task demand (max one unit per step) */
-                    if(currentDemand <= m_mapRobotPerTask[cCTask.GetId()]) {
-                        cCTask.SetDemand(0);
-                        /* The floor texture must be updated */
-                        m_pcFloor->SetChanged();
-                    } else {
-                        cCTask.SetDemand(currentDemand - 1);
-                    }
+                /* Update task demand (max one unit per step) */
+                if(currentDemand <= m_mapRobotPerTask[cCTask.GetId()]) {
+                    cCTask.SetDemand(0);
+                    /* The floor texture must be updated */
+                    m_pcFloor->SetChanged();
+                } else {
+                    cCTask.SetDemand(currentDemand - 1);
                 }
             }
         }
@@ -608,35 +514,18 @@ void CExperimentLoopFunctionsNop::PostStep() {
                 itTask != cCTasks->end();
                 ++itTask) {
 
-                if(m_bNoDemandTasks) {
-                    CCircleTaskNoDemandEntity& cCTask = *any_cast<CCircleTaskNoDemandEntity*>(itTask->second);
+                CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
 
-                    /* Log tasks that are inside the arena */
-                    if(cCTask.GetPosition().GetX() < 500) {
-                        Task* task = tData.add_tasks();
-                        task->set_name(cCTask.GetId());
-                        task->set_demand(cCTask.GetWorkPerformed());
-                        task->set_requiredrobots(cCTask.GetMinRobotNum());
-                        task->set_currentrobots(cCTask.GetCurrentRobotNum());
-                        task->mutable_position()->set_x(cCTask.GetPosition().GetX());
-                        task->mutable_position()->set_y(cCTask.GetPosition().GetY());
-                        task->set_radius(cCTask.GetRadius());
-                    }
-                } else {
-                    CCircleTaskEntity& cCTask = *any_cast<CCircleTaskEntity*>(itTask->second);
-                    // CRectangleTaskEntity& cCTask = *any_cast<CRectangleTaskEntity*>(itTask->second);
-
-                    /* Log tasks that are inside the arena */
-                    if(cCTask.GetPosition().GetX() < 500) {
-                        Task* task = tData.add_tasks();
-                        task->set_name(cCTask.GetId());
-                        task->set_demand(cCTask.GetDemand());
-                        task->set_requiredrobots(cCTask.GetMinRobotNum());
-                        task->set_currentrobots(cCTask.GetCurrentRobotNum());
-                        task->mutable_position()->set_x(cCTask.GetPosition().GetX());
-                        task->mutable_position()->set_y(cCTask.GetPosition().GetY());
-                        task->set_radius(cCTask.GetRadius());
-                    }
+                /* Log tasks that are inside the arena */
+                if(cCTask.GetPosition().GetX() < 500) {
+                    Task* task = tData.add_tasks();
+                    task->set_name(cCTask.GetId());
+                    task->set_demand(cCTask.GetDemand());
+                    task->set_requiredrobots(cCTask.GetMinRobotNum());
+                    task->set_currentrobots(cCTask.GetCurrentRobotNum());
+                    task->mutable_position()->set_x(cCTask.GetPosition().GetX());
+                    task->mutable_position()->set_y(cCTask.GetPosition().GetY());
+                    task->set_radius(cCTask.GetRadius());
                 }
             }
         }
@@ -657,38 +546,20 @@ void CExperimentLoopFunctionsNop::PostStep() {
 
     /* Terminate simulation time limit is reached */
     if(m_bTaskExists) {
-        if(m_bNoDemandTasks) {
-            if (GetSpace().GetSimulationClock() == CSimulator::GetInstance().GetMaxSimulationClock()) {
-                int final_time = GetSpace().GetSimulationClock();
-                m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
-                m_cOutput << "\n";
-                m_cOutput << "FINISH_TIME," << final_time << "\n";
-                m_cOutput << "POINTS SCORED," << (int)m_unPointsObtained << "\n";
-                // m_cOutput << "TASK_STATUS,FINISHED" << "\n";
-                m_cOutput.close();
-                std::cout << "[LOG] Reached time limit!" << std::endl;
-                std::cout << "[LOG] Score: " << (int)m_unPointsObtained << std::endl;
-                // std::cout << "[LOG] Mission time: " << final_time << std::endl;
-                // std::cout << "[LOG] All tasks completed" << std::endl;
-                std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
-                this->Destroy();
-            }
-        } else {
-            if(total_demand == 0) {
-                int final_time = GetSpace().GetSimulationClock();
-                m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
-                m_cOutput << "\n";
-                m_cOutput << "FINISH_TIME," << final_time << "\n";
-                m_cOutput << "POINTS SCORED," << (int)m_unPointsObtained << "\n";
-                // m_cOutput << "TASK_STATUS,FINISHED" << "\n";
-                m_cOutput.close();
-                std::cout << "[LOG] Tasks completed!" << std::endl;
-                std::cout << "[LOG] Score: " << (int)m_unPointsObtained << std::endl;
-                // std::cout << "[LOG] Mission time: " << final_time << std::endl;
-                // std::cout << "[LOG] All tasks completed" << std::endl;
-                std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
-                this->Destroy();
-            }
+        if(total_demand == 0) {
+            int final_time = GetSpace().GetSimulationClock();
+            m_cOutput.open(m_strSummaryFilePath.c_str(), std::ios_base::app);
+            m_cOutput << "\n";
+            m_cOutput << "FINISH_TIME," << final_time << "\n";
+            m_cOutput << "POINTS SCORED," << (int)m_unPointsObtained << "\n";
+            // m_cOutput << "TASK_STATUS,FINISHED" << "\n";
+            m_cOutput.close();
+            std::cout << "[LOG] Tasks completed!" << std::endl;
+            std::cout << "[LOG] Score: " << (int)m_unPointsObtained << std::endl;
+            // std::cout << "[LOG] Mission time: " << final_time << std::endl;
+            // std::cout << "[LOG] All tasks completed" << std::endl;
+            std::cout << "[LOG] TERMINATING SIMULATION ..." << std::endl;
+            this->Destroy();
         }
     }
     else if (GetSpace().GetSimulationClock() == CSimulator::GetInstance().GetMaxSimulationClock()) {
@@ -877,11 +748,7 @@ std::string CExperimentLoopFunctionsNop::GetWorkerType() const {
 }
 
 std::string CExperimentLoopFunctionsNop::GetTaskType() const {
-    if(m_bNoDemandTasks) {
-        return "circle_task_no_demand";
-    } else {
-        return "circle_task";
-    }
+    return "circle_task";
 }
 
 /****************************************/
@@ -1116,10 +983,6 @@ void CExperimentLoopFunctionsNop::InitTasksCircular() {
 
     LOG << "[LOG] Adding tasks..." << std::endl;
 
-    /* Set the type of the task */
-    // m_bNoDemandTasks = true;
-    // m_bNoDemandTasks = false;
-
     /* ID counts */
     m_unNextTaskId = 1;
     /* Meta data */
@@ -1143,8 +1006,6 @@ void CExperimentLoopFunctionsNop::InitTasksCircular() {
         Real fHeight = 0.3;
         /* Task demand */
         UInt32 unDemand = 400; // FIXED
-        if(m_bNoDemandTasks)
-            unDemand = 400000;
         /* Min and Max robot constraint */
         UInt32 unMinRobotNum = 1; // m_unWorkerPerTeam / 2;
         UInt32 unMaxRobotNum = 100;
@@ -1252,21 +1113,13 @@ void CExperimentLoopFunctionsNop::AssignTasks() {
     std::ostringstream cId;
     
     size_t startLeaderId;
-    if(m_bNoDemandTasks) {
-        startLeaderId = 2;
-    } else {
-        startLeaderId = 1;
-    }
+    startLeaderId = 1;
 
     for(size_t i = startLeaderId; i <= m_unTotalLeaders; i++) {
         cId.str("");
         cId << "L" << i;
         leaders.push_back(cId.str());
     }
-
-    // for(const auto& t : v) {
-    //     LOG << t.first << ", " << t.second.Angle() << std::endl;
-    // }
 
     /* Find the task with the smallest angle for L1 from the arena centre */
     CEntity& cEntity = GetSpace().GetEntity(leaders[0]);
@@ -1551,24 +1404,13 @@ void CExperimentLoopFunctionsNop::PlaceCluster(const CVector2& c_center,
         }
 
         /* Get entity with the name "F1" and cast it as an epuckentity */
-        if(m_bNoDemandTasks) {
-            if(un_leader_id_start == 2) {
-                LOG << "Moving F1, next leader " << un_leader_id_start << std::endl;
-                CEPuckEntity& cEntity = dynamic_cast<CEPuckEntity&>(GetSpace().GetEntity(std::string("F1")));
-                // move to 0.15,0,0
-                cEPPos.Set(0.15, 0, 0);
-                // cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE), CVector3::Z);
-                MoveEntity(cEntity.GetEmbodiedEntity(), cEPPos, cEPRot);
-            }
-        } else {
-            if(un_leader_id_start == 1) {
-                LOG << "Moving F1, next leader " << un_leader_id_start << std::endl;
-                CEPuckEntity& cEntity = dynamic_cast<CEPuckEntity&>(GetSpace().GetEntity(std::string("F1")));
-                // move to 0.15,0,0
-                cEPPos.Set(0, 0, 0);
-                // cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE), CVector3::Z);
-                MoveEntity(cEntity.GetEmbodiedEntity(), cEPPos, cEPRot);
-            }
+        if(un_leader_id_start == 1) {
+            LOG << "Moving F1, next leader " << un_leader_id_start << std::endl;
+            CEPuckEntity& cEntity = dynamic_cast<CEPuckEntity&>(GetSpace().GetEntity(std::string("F1")));
+            // move to 0.15,0,0
+            cEPPos.Set(0, 0, 0);
+            // cEPRot.FromAngleAxis(m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE), CVector3::Z);
+            MoveEntity(cEntity.GetEmbodiedEntity(), cEPPos, cEPRot);
         }
 
     } catch(CARGoSException& ex) {
@@ -1831,25 +1673,15 @@ void CExperimentLoopFunctionsNop::PlaceCircleTask(const CVector2& c_center,
         cTSId.str("");
         cTSId << "task_" << un_task_id_start;
         /* Create the task and add it to ARGoS space */
-        if(m_bNoDemandTasks) {
-            CCircleTaskNoDemandEntity* pcCTS;
-            pcCTS = new CCircleTaskNoDemandEntity(cTSId.str(),
-                                        c_center,
-                                        f_radius,
-                                        f_height);
-            AddEntity(*pcCTS);
-
-        } else {
-            CCircleTaskEntity* pcCTS;
-            pcCTS = new CCircleTaskEntity(cTSId.str(),
-                                        c_center,
-                                        f_radius,
-                                        f_height,
-                                        un_demand,
-                                        un_min_robot_num,
-                                        un_max_robot_num);
-            AddEntity(*pcCTS);
-        }
+        CCircleTaskEntity* pcCTS;
+        pcCTS = new CCircleTaskEntity(cTSId.str(),
+                                    c_center,
+                                    f_radius,
+                                    f_height,
+                                    un_demand,
+                                    un_min_robot_num,
+                                    un_max_robot_num);
+        AddEntity(*pcCTS);
 
         m_vecEntityID.push_back(cTSId.str());
 

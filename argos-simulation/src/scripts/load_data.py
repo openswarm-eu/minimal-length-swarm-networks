@@ -140,8 +140,8 @@ class SimData:
     
 
 if __name__ == "__main__":
-    log_data_path = '<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_comm/0.60RAB/5T/network_maintenance_5T_12R_0.6RAB_029/log_data.pb'
-    commands_path = '<path-to-file>/minimal-length-swarm-networks/results/iros/5T/nop_ex1_5T_6R_009/summary.csv'
+    log_data_path = '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_comm/0.60RAB/5T/network_maintenance_5T_12R_0.6RAB_029/log_data.pb'
+    commands_path = '<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/iros/5T/nop_ex1_5T_6R_009/summary.csv'
     # print if commands_path exists
     if not os.path.exists(commands_path):
         print('No commands file found')

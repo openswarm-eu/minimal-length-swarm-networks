@@ -13,7 +13,7 @@ def main():
 
     s = {}
 
-    with open('<path-to-file>/minimal-length-swarm-networks/results/network_maintenance_comm/network_maintenance_5T_12R_0.60/log_data.pb', 'rb') as f:
+    with open('<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_comm/network_maintenance_5T_12R_0.60/log_data.pb', 'rb') as f:
         buf = f.read()
         n = 0
         while n < len(buf):

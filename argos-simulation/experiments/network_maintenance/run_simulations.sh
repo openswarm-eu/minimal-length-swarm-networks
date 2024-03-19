@@ -22,9 +22,9 @@ TARGET_DISTANCE=60
 EP_RAB_RANGE=(0.8 0.75 0.7 0.65 0.6 0.55 0.5)
 DEFAULT_EP_RAB_RANGE=0.8
 
-EXPERIMENT_DIR=<path-to-file>/minimal-length-swarm-networks/experiments/$EXPERIMENT_NAME
-RESULT_DIR=<path-to-file>/minimal-length-swarm-networks/results/$EXPERIMENT_NAME
-# RESULT_DIR=<path-to-file>/minimal-length-swarm-networks/results/temp
+EXPERIMENT_DIR=<path-to-file>/minimal-length-swarm-networks/argos-simulation/experiments/$EXPERIMENT_NAME
+RESULT_DIR=<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/$EXPERIMENT_NAME
+# RESULT_DIR=<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/temp
 EXPERIMENT_FILE=$EXPERIMENT_DIR/${EXPERIMENT_NAME}.argos
 SEED_FILE=$EXPERIMENT_DIR/seeds.txt
 
