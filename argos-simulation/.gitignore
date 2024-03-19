@@ -1,0 +1,8 @@
+build*/
+results*/
+frames*/
+.venv/
+venv/
+*__pycache__*
+*geosteiner*
+.vscode/

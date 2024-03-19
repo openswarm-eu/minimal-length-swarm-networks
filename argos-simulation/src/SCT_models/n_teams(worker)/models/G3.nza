@@ -1,0 +1,21 @@
+{
+["radius_factor"] = 1,
+["transitions"] = {
+[1] = {
+["source"] = 1,
+["target"] = 1,
+["event"] = 1}},
+["events"] = {
+[1] = {
+["observable"] = true,
+["name"] = "_notifyNM",
+["refinement"] = "",
+["shared"] = true,
+["controllable"] = false}},
+["states"] = {
+[1] = {
+["initial"] = true,
+["x"] = 81.27734375,
+["name"] = "1",
+["marked"] = true,
+["y"] = 79.22265625}}}

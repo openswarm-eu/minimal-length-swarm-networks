@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+message TimeStep {
+  uint64 time = 1;
+  repeated Robot robots = 2;
+  repeated Task tasks = 3;
+  optional uint64 points = 4;
+}
+
+message Position {
+  double x = 1;
+  double y = 2;
+}
+
+message Orientation {
+  double w = 1;
+  double x = 2;
+  double y = 3;
+  double z = 4;
+}
+
+message HopCount {
+  uint64 teamID = 1;
+  uint64 count = 2;
+  string neighbor = 3;
+}
+
+message Robot {
+  string name = 1;
+  uint64 teamID = 2;
+  enum State {
+    FOLLOWER = 0;
+    LEADER = 1;
+    CONNECTOR = 2;
+    TRAVELER = 3;
+  }
+  State state = 3;
+  Position position = 4;
+  Orientation orientation = 5;
+  optional uint64 totalSent = 6;
+  optional uint64 totalReceived = 7;
+  optional string action = 8;
+  repeated HopCount hopCount = 9;
+  optional uint64 hopCountTeam = 10;
+  repeated HopCount prevHops = 11;
+}
+
+message Task {
+  string name = 1;
+  uint64 demand = 2;
+  uint64 requiredRobots = 3;
+  uint64 currentRobots = 4;
+  Position position = 5;
+  double radius = 6;
+}
