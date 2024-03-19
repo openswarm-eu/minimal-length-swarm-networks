@@ -1,4 +1,4 @@
-# Towards decentralised formation of minimal-length networks using swarms of robots
+# Minimal-Length Swarm Networks
 
 [**Installation**](#installation) | [**Usage**](#usage)
 
