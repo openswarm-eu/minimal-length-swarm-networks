@@ -1,6 +1,6 @@
 # Minimal-Length Swarm Networks
 
-[**Installation**](#installation) | [**Usage**](#usage)
+[**Installation**](#installation) | [**Usage**](#usage) | [**License**](#license)
 
 This repository contains the code for the paper submission to IROS 2024:
 - Towards decentralised formation of minimal-length networks using swarms of robots
@@ -81,3 +81,7 @@ Use the following command to run an experiment:
 ```bash
 argos3 -c experiments/network_maintenance/network_maintenance.argos
 ```
+
+# License
+The code in this repository is released under the terms of the MIT license.
+
