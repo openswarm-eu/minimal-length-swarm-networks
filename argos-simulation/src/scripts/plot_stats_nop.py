@@ -4175,7 +4175,7 @@ def main():
 
     ### final timestep
     # scenario = 'network_maintenance_3T_6R_019'
-    scenario = 'network_maintenance_5T_6R_018' ## in paper
+    scenario = 'network_maintenance_6T_12R_0.8RAB_001'
     path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance', scenario)
     # path = join(environ['HOME'], f'<path-to-file>/minimal-length-swarm-networks/argos-simulation/results/network_maintenance_iros/{scenario[20:22]}', scenario)
     real_robot = False
