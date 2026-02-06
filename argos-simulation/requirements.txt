@@ -12,7 +12,7 @@ numpy==1.26.0
 packaging==23.1
 pandas==2.1.1
 pillow==11.3.0
-protobuf==6.31.1
+protobuf==6.33.5
 pyparsing==3.1.1
 pyproject-toml==0.0.10
 python-dateutil==2.8.2
